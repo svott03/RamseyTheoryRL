@@ -3,6 +3,9 @@ import numpy as np
 import tensorflow as tf
 import networkx as nx
 import random
+import cProfile
+import pstats
+import io
 import timeit
 import pickle
 from functools import partial
@@ -245,6 +248,8 @@ class NeptuneRunner:
                 run['running/iterations'].append(iterations)
             return update_running
         update_running = update_run_data(unique_path, startTime)
+        profiler = cProfile.Profile()
+        profiler.enable()
         if (self.multi):
             ramsey_multi.bfs(g=G, unique_path=unique_path, past=PAST, counters=COUNTERS, s=self.S, t=self.T, n=self.N,
                                iter_batch=self.PARAMS['iter_batch'], update_model=update_model, heuristic=heuristic, update_running=update_running, oldIterations=oldIterations, batches=self.PARAMS['iter_batches'], edges=EDGES)
@@ -255,6 +260,12 @@ class NeptuneRunner:
                 iter_batch=self.PARAMS['iter_batch'], update_model=update_model, heuristic=heuristic, update_running=update_running, oldIterations=oldIterations, batches=self.PARAMS['iter_batches'], edges=EDGES)
             print(
                 f"Single Threaded Time Elapsed: {timeit.default_timer() - startTime}")
+        profiler.disable()
+        s = io.StringIO()
+        ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
+        ps.print_stats()
+
+        print(s.getvalue())
         run.stop()
         if self.PARAMS['heuristic_type'] in ["SCALED_DNN", "DNN"]:
             model_version.stop()
