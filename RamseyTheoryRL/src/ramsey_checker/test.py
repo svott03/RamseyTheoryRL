@@ -32,7 +32,9 @@ class NeptuneRunner:
           'iter_batch': 1,  # Steps to take before updating model data / weights
           'iter_batches': 1000,  # None if no stopping value, else num. of iter_batches
           'starting_graph': "FROM_CURRENT", # Choose from RANDOM, FROM_PRIOR, FROM_CURRENT, EMPTY
-          'starting_edges': True}  
+          'starting_edges': True, # Add new edges if starting FROM_PRIOR
+          'load_model': False # Whether or not to load a past version of the model
+          }  
         if PARAMS['heuristic_type'] in ["DNN", "SCALED_DNN"]:
             DNN_PARAMS = {'training_epochs': 5, 'epochs': 1, 'batch_size': 32, 'optimizer': 'adam', 'loss': tf.keras.losses.BinaryCrossentropy(
                 from_logits=False, label_smoothing=0.2), 'loss_info': 'BinaryCrossentropy(from_logits=False, label_smoothing=0.2)', 'last_activation': 'sigmoid', 'pretrain': True}
@@ -46,9 +48,14 @@ class NeptuneRunner:
                                     'starting_graph_index': 0  # 0 is default
                                     }
             PARAMS.update(STARTING_GRAPH_PARAMS)
+        if PARAMS['load_model']:
+            LOAD_PARAMS = {'model_id':"RAM-HEUR-169",'run_id':"RAM-248"}
+            PARAMS.update(LOAD_PARAMS)
         return PARAMS
-    def update_params(self, params):
+    def set_params(self, params):
         self.PARAMS = params
+    def update_params(self, params):
+        self.PARAMS.update(params)
     def __init__(self, n, s, t, multi=False, project = f"{os.environ.get('NEPTUNE_NAME')}/RamseyRL", model_name = 'RAM-HEUR', load_model=False, params=get_default_params()):
         self.N = n
         self.S = s
@@ -56,14 +63,13 @@ class NeptuneRunner:
         self.multi = multi
         self.PROJECT = project
         self.MODEL_NAME = model_name
-        self.LOAD_MODEL = load_model
         self.PARAMS = params
     def run(self):
         ramsey_checker = RamseyCheckerSingleThread()
         ramsey_multi = RamseyCheckerMultiThread()
-        if self.LOAD_MODEL:
-            MODEL_ID = "RAM-HEUR-85"
-            RUN_ID = "RAM-94"
+        if self.PARAMS['load_model']:
+            MODEL_ID = self.PARAMS['model_id']
+            RUN_ID = self.PARAMS['run_id']
             print(f"Loading {MODEL_ID} and {RUN_ID}.")
             run, model_version, model = load_model_by_id(project=self.PROJECT,
                                                         model_name=self.MODEL_NAME,
@@ -196,7 +202,7 @@ class NeptuneRunner:
                 oldIterations = run['running/iterations'].fetch_last()
                 timeOffset = run['running/time'].fetch_last()
                 return past, counters, g, oldIterations, timeOffset
-            if self.LOAD_MODEL:
+            if self.PARAMS['load_model']:
                 PAST, COUNTERS, G, oldIterations, timeOffset = load_data()
             else:
                 PAST = dict()
