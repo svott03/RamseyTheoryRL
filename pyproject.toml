@@ -6,8 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "RamseyTheoryRL"
 version = "0.77"
 authors = [
-    "Steve Vott <svott03@gmail.com>",
-    "Adam Lehavi <alehavi@usc.edu>",
+  { name="Steve Vott", email="svott03@gmail.com" },
+  { name="Adam Lehavi", email="alehavi@usc.edu" },
 ]
 description = "Ramsey Number Explorer"
 readme = "README.md"

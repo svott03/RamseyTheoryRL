@@ -3,7 +3,7 @@
 ## About
 Ramsey Theory RL is a project that seeks to use simple RL and a basic graph invariant to pseudo-intelligently search for counterexamples for unknown Ramsey number bounds. The main aims of the project are to either [improve the bounds](https://en.wikipedia.org/wiki/Ramsey%27s_theorem) or to assist in finding more [isomorphic graphs](https://users.cecs.anu.edu.au/~bdm/data/ramsey.html) for known numbers to help future efforts. 
 
-Our algorithm is an informed Best First Search. At each iteration, all neighbors (1 changed edge away) to the current graph are numerically represented by their invariant. The invariant is counts of all 11 posible isomorphic 4-graphs inside of them. The neighbors with invariants not yet expanded are then passed through a heuristic which determines which graph to expand next. Past literature has used the count of 4-paths as a heuristic. We use a DNN with 1 hidden layer that we iteratively train on seen graphs, to encourage straying away from known areas. 
+Our algorithm is an informed Best First Search. At each iteration, all neighbors (1 changed edge away) to the current graph are numerically represented by their invariant. The invariant is counts of all 11 possible isomorphic 4-graphs inside of them. The neighbors with invariants not yet expanded are then passed through a heuristic which determines which graph to expand next. Past literature has used the count of 4-paths as a heuristic. We use a DNN with 1 hidden layer that we iteratively train on seen graphs, to encourage straying away from known areas. 
 
 The algorithm can pretrain on known graphs and can start from a random graphs, known counterexamples from a smaller $n$, and known counterexamples from the same $n$. Logging is done through neptune.ai.
 
