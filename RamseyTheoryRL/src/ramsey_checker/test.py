@@ -36,7 +36,8 @@ class NeptuneRunner:
           'iter_batches': 1000,  # None if no stopping value, else num. of iter_batches
           'starting_graph': "FROM_CURRENT", # Choose from RANDOM, FROM_PRIOR, FROM_CURRENT, EMPTY
           'starting_edges': True, # Add new edges if starting FROM_PRIOR
-          'load_model': False # Whether or not to load a past version of the model
+          'load_model': False, # Whether or not to load a past version of the model
+          'profiler': True # Enable profiler
           }  
         if PARAMS['heuristic_type'] in ["DNN", "SCALED_DNN"]:
             DNN_PARAMS = {'training_epochs': 5, 'epochs': 1, 'batch_size': 32, 'optimizer': 'adam', 'loss': tf.keras.losses.BinaryCrossentropy(
@@ -248,24 +249,35 @@ class NeptuneRunner:
                 run['running/iterations'].append(iterations)
             return update_running
         update_running = update_run_data(unique_path, startTime)
-        profiler = cProfile.Profile()
-        profiler.enable()
-        if (self.multi):
-            ramsey_multi.bfs(g=G, unique_path=unique_path, past=PAST, counters=COUNTERS, s=self.S, t=self.T, n=self.N,
-                               iter_batch=self.PARAMS['iter_batch'], update_model=update_model, heuristic=heuristic, update_running=update_running, oldIterations=oldIterations, batches=self.PARAMS['iter_batches'], edges=EDGES)
-            print(
-                f"Multi Threaded Time Elapsed: {timeit.default_timer() - startTime}")
+        if (self.PARAMS['profiler']):
+            profiler = cProfile.Profile()
+            profiler.enable()
+            if (self.multi):
+                ramsey_multi.bfs(g=G, unique_path=unique_path, past=PAST, counters=COUNTERS, s=self.S, t=self.T, n=self.N,
+                                iter_batch=self.PARAMS['iter_batch'], update_model=update_model, heuristic=heuristic, update_running=update_running, oldIterations=oldIterations, batches=self.PARAMS['iter_batches'], edges=EDGES)
+                print(
+                    f"Multi Threaded Time Elapsed: {timeit.default_timer() - startTime}")
+            else:
+                ramsey_checker.bfs(g=G, unique_path=unique_path, past=PAST, counters=COUNTERS, s=self.S, t=self.T, n=self.N,
+                    iter_batch=self.PARAMS['iter_batch'], update_model=update_model, heuristic=heuristic, update_running=update_running, oldIterations=oldIterations, batches=self.PARAMS['iter_batches'], edges=EDGES)
+                print(
+                    f"Single Threaded Time Elapsed: {timeit.default_timer() - startTime}")
+            profiler.disable()
+            s = io.StringIO()
+            ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
+            ps.print_stats(20)
+            print(s.getvalue())
         else:
-            ramsey_checker.bfs(g=G, unique_path=unique_path, past=PAST, counters=COUNTERS, s=self.S, t=self.T, n=self.N,
-                iter_batch=self.PARAMS['iter_batch'], update_model=update_model, heuristic=heuristic, update_running=update_running, oldIterations=oldIterations, batches=self.PARAMS['iter_batches'], edges=EDGES)
-            print(
-                f"Single Threaded Time Elapsed: {timeit.default_timer() - startTime}")
-        profiler.disable()
-        s = io.StringIO()
-        ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
-        ps.print_stats(20)
-
-        print(s.getvalue())
+            if (self.multi):
+                ramsey_multi.bfs(g=G, unique_path=unique_path, past=PAST, counters=COUNTERS, s=self.S, t=self.T, n=self.N,
+                                 iter_batch=self.PARAMS['iter_batch'], update_model=update_model, heuristic=heuristic, update_running=update_running, oldIterations=oldIterations, batches=self.PARAMS['iter_batches'], edges=EDGES)
+                print(
+                    f"Multi Threaded Time Elapsed: {timeit.default_timer() - startTime}")
+            else:
+                ramsey_checker.bfs(g=G, unique_path=unique_path, past=PAST, counters=COUNTERS, s=self.S, t=self.T, n=self.N,
+                                   iter_batch=self.PARAMS['iter_batch'], update_model=update_model, heuristic=heuristic, update_running=update_running, oldIterations=oldIterations, batches=self.PARAMS['iter_batches'], edges=EDGES)
+                print(
+                    f"Single Threaded Time Elapsed: {timeit.default_timer() - startTime}")
         run.stop()
         if self.PARAMS['heuristic_type'] in ["SCALED_DNN", "DNN"]:
             model_version.stop()

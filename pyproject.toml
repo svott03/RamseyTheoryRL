@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "RamseyTheoryRL"
+version = "0.77"
+authors = [
+  { name="Steve Vott", email="svott03@gmail.com" },
+  { name="Adam Lehavi", email="alehavi@usc.edu" },
+]
+description = "Ramsey Number Explorer"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/aLehav/RamseyTheoryRL"
