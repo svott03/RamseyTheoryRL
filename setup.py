@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="RamseyTheoryRL",
-    version="0.76",
+    version="0.77",
     packages=find_packages(),
     include_package_data=True,
     author="Adam Lehavi, Steve Vott",

@@ -263,7 +263,7 @@ class NeptuneRunner:
         profiler.disable()
         s = io.StringIO()
         ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
-        ps.print_stats()
+        ps.print_stats(20)
 
         print(s.getvalue())
         run.stop()
